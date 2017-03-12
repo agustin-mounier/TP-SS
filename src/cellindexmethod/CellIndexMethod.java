@@ -22,7 +22,7 @@ public class CellIndexMethod {
 
     private Map<Particle, Set<Particle>> neighbours;
 
-    // TODO: What's
+    // TODO: What's "condiciones periodicas de contorno"
     public CellIndexMethod(double l, double rc, int m, List<Particle> particles) {
         this.l = l;
         this.rc = rc;
@@ -41,8 +41,8 @@ public class CellIndexMethod {
         }
         for (Particle p :
                 particles) {
-            Point point = p.getPosition();
-            matrix[(int)(point.x / cellLenght)][(int)(point.y / cellLenght)].add(p);
+            Point position = p.getPosition();
+            matrix[(int)(position.x / cellLenght)][(int)(position.y / cellLenght)].add(p);
         }
     }
 
