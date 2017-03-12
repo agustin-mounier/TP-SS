@@ -21,7 +21,7 @@ public class CellIndexMethod {
     private double rc;
     private int m;
 
-    private Map<Particle, Set<Particle>> neighbours;
+    private List<Particle> particles;
 
     // TODO: What's "condiciones periodicas de contorno"
     public CellIndexMethod(double l, double rc, int m, List<Particle> particles) {
@@ -29,9 +29,8 @@ public class CellIndexMethod {
         this.rc = rc;
         this.m = m;
         cellLenght = l/m;
-
+        this.particles = particles;
         insertParticles(m, particles);
-        insertNeighbours(particles);
     }
 
     private void insertParticles(int m, List<Particle> particles) {
@@ -45,13 +44,6 @@ public class CellIndexMethod {
                 particles) {
             Point position = p.getPosition();
             matrix[(int)(position.x / cellLenght)][(int)(position.y / cellLenght)].add(p);
-        }
-    }
-
-    public void insertNeighbours(List<Particle> particles) {
-        for (Particle p :
-             particles) {
-            this.neighbours.put(p, new HashSet<>());
         }
     }
 
@@ -72,5 +64,18 @@ public class CellIndexMethod {
         neighbours.remove(particle);
         return neighbours;
     }
+
+    public void calculateDistances() {
+
+        for(Particle particle : particles) {
+            for(Particle neighbour : getNeighbours(particle)) {
+                double distance = Particle.getDistance(particle, neighbour);
+                if(distance < rc)
+                    System.out.println(distance);
+            }
+        }
+
+    }
+
 
 }
