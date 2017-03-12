@@ -16,7 +16,7 @@ public class main {
     private static final int L = 20;
     private static final double RADIUS = 0.25;
     private static final double RC = 1;
-    private static final int M = 10;
+    private static final int M = 20;
 
 
     static List<Particle> particles = new ArrayList<>();
@@ -40,6 +40,7 @@ public class main {
 
         CellIndexMethod cellIndexMethod = new CellIndexMethod(L, RC, M, particles);
         cellIndexMethod.calculateDistances();
+        cellIndexMethod.calculateDistancesWithBruteForce();
     }
 
     public static boolean isValid(Particle p) {

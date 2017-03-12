@@ -55,9 +55,9 @@ public class CellIndexMethod {
         Set<Particle> neighbours = new HashSet<>();
 
         for(int i = cellX - 1; i <= cellX + 1; i ++) {
-            if ( i < 0 || i > m) continue;
+            if ( i < 0 || i >= m) continue;
             for (int j = cellY - 1; j <= cellY + 1; j++) {
-                if (j < 0 || j > m) continue;
+                if (j < 0 || j >= m) continue;
                 neighbours.addAll(matrix[i][j]);
             }
         }
@@ -66,15 +66,31 @@ public class CellIndexMethod {
     }
 
     public void calculateDistances() {
-
+        int cant = 0;
+        long start = System.currentTimeMillis();
         for(Particle particle : particles) {
             for(Particle neighbour : getNeighbours(particle)) {
                 double distance = Particle.getDistance(particle, neighbour);
-                if(distance < rc)
-                    System.out.println(distance);
+//                if(distance < rc)
+//                    System.out.println(cant++ + " " + distance);
             }
         }
+        System.out.println("Elapsed time: " + (System.currentTimeMillis() - start));
 
+    }
+
+    public void calculateDistancesWithBruteForce() {
+        int cant = 0;
+        long start = System.currentTimeMillis();
+        for(Particle particle : particles) {
+            for(Particle neighbour : particles) {
+                if(particle == neighbour) continue;
+                double distance = Particle.getDistance(particle, neighbour);
+//                if(distance < rc)
+//                    System.out.println(cant++ + " " + distance);
+            }
+        }
+        System.out.println("Elapsed time: " + (System.currentTimeMillis() - start));
     }
 
 
