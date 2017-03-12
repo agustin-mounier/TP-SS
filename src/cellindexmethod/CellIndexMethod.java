@@ -3,6 +3,11 @@ package cellindexmethod;
 import models.Particle;
 import models.Point;
 
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,31 +71,51 @@ public class CellIndexMethod {
     }
 
     public void calculateDistances() {
-        int cant = 0;
         long start = System.currentTimeMillis();
-        for(Particle particle : particles) {
-            for(Particle neighbour : getNeighbours(particle)) {
-                double distance = Particle.getDistance(particle, neighbour);
-//                if(distance < rc)
-//                    System.out.println(cant++ + " " + distance);
-            }
-        }
-        System.out.println("Elapsed time: " + (System.currentTimeMillis() - start));
+        String s;
 
+        try{
+            PrintWriter writer = new PrintWriter("cellIndexMethod.txt", "UTF-8");
+
+            for(Particle particle : particles) {
+                for(Particle neighbour : getNeighbours(particle)) {
+                    double distance = Particle.getDistance(particle, neighbour);
+                    if(distance < rc) {
+                        s = "Particle " + particle.getId() + " to Particle " + neighbour.getId() + ": " + distance;
+                        writer.println(s);
+                    }
+                }
+            }
+            writer.println("***************************************************************************************");
+            writer.println("Elapsed time: " + (System.currentTimeMillis() - start));
+            writer.close();
+        } catch (IOException e) {
+            // do something
+        }
     }
 
     public void calculateDistancesWithBruteForce() {
-        int cant = 0;
         long start = System.currentTimeMillis();
-        for(Particle particle : particles) {
-            for(Particle neighbour : particles) {
-                if(particle == neighbour) continue;
-                double distance = Particle.getDistance(particle, neighbour);
-//                if(distance < rc)
-//                    System.out.println(cant++ + " " + distance);
+        String s;
+        try{
+            PrintWriter writer = new PrintWriter("bruteForceMethod.txt", "UTF-8");
+
+            for(Particle particle : particles) {
+                for(Particle neighbour : particles) {
+                    if (neighbour == particle) continue;
+                    double distance = Particle.getDistance(particle, neighbour);
+                    if(distance < rc) {
+                        s = "Particle " + particle.getId() + " to Particle " + neighbour.getId() + ": " + distance;
+                        writer.println(s);
+                    }
+                }
             }
+            writer.println("***************************************************************************************");
+            writer.println("Elapsed time: " + (System.currentTimeMillis() - start));
+            writer.close();
+        } catch (IOException e) {
+            // do something
         }
-        System.out.println("Elapsed time: " + (System.currentTimeMillis() - start));
     }
 
 
