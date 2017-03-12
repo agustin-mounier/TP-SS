@@ -19,6 +19,7 @@ public class CellIndexMethod {
 
     private double l;
     private double rc;
+    private int m;
 
     private Map<Particle, Set<Particle>> neighbours;
 
@@ -26,6 +27,7 @@ public class CellIndexMethod {
     public CellIndexMethod(double l, double rc, int m, List<Particle> particles) {
         this.l = l;
         this.rc = rc;
+        this.m = m;
         cellLenght = l/m;
 
         insertParticles(m, particles);
@@ -51,6 +53,24 @@ public class CellIndexMethod {
              particles) {
             this.neighbours.put(p, new HashSet<>());
         }
+    }
+
+    public Set<Particle> getNeighbours(Particle particle) {
+
+        Point point = particle.getPosition();
+        int cellX = (int) (point.x / cellLenght);
+        int cellY = (int) (point.y / cellLenght);
+        Set<Particle> neighbours = new HashSet<>();
+
+        for(int i = cellX - 1; i <= cellX + 1; i ++) {
+            if ( i < 0 || i > m) continue;
+            for (int j = cellY - 1; j <= cellY + 1; j++) {
+                if (j < 0 || j > m) continue;
+                neighbours.addAll(matrix[i][j]);
+            }
+        }
+        neighbours.remove(particle);
+        return neighbours;
     }
 
 }
