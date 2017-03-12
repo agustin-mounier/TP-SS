@@ -2,6 +2,8 @@ import cellindexmethod.CellIndexMethod;
 import models.Particle;
 import models.Point;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -26,16 +28,26 @@ public class main {
 
         Random r = new Random();
 
-        for (int i = 0; i < CANT_PARTICLES; i++) {
-            double x = L * r.nextDouble();
-            double y = L * r.nextDouble();
-            Particle particle = new Particle(i, RADIUS, x, y);
-            while (!isValid(particle)) {
-                x = L * r.nextDouble();
-                y = L * r.nextDouble();
-                particle = new Particle(i, RADIUS, x, y);
+        try {
+            PrintWriter writer = new PrintWriter("all-cells.xyz", "UTF-8");
+            writer.println(CANT_PARTICLES);
+            writer.println(L);
+            for (int i = 0; i < CANT_PARTICLES; i++) {
+                double x = L * r.nextDouble();
+                double y = L * r.nextDouble();
+                Particle particle = new Particle(i, RADIUS, x, y);
+                while (!isValid(particle)) {
+                    x = L * r.nextDouble();
+                    y = L * r.nextDouble();
+                    particle = new Particle(i, RADIUS, x, y);
+                }
+
+                writer.println(Particle.getXYZformat(particle, 0, 0, 0));
+                particles.add(particle);
             }
-            particles.add(particle);
+            writer.close();
+        } catch (IOException e) {
+            // do something
         }
 
         CellIndexMethod cellIndexMethod = new CellIndexMethod(L, RC, M, particles);

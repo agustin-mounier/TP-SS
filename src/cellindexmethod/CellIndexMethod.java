@@ -8,10 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by sebastian on 3/12/17.
@@ -73,16 +70,37 @@ public class CellIndexMethod {
     public void calculateDistances() {
         long start = System.currentTimeMillis();
         String s;
+        int cant = 0;
+        Random r = new Random();
+        int randomInt = r.nextInt() * this.particles.size();
+        boolean actual = false;
 
         try{
             PrintWriter writer = new PrintWriter("cellIndexMethod.txt", "UTF-8");
+            PrintWriter painter = new PrintWriter("cell-and-neig.xyz", "UTF-8");
 
             for(Particle particle : particles) {
+                if (randomInt == cant) {
+                    actual = true;
+                } else if (randomInt == cant -1) {
+                    actual = false;
+                }
+                cant++;
+                if (actual) {
+                    painter.println(Particle.getXYZformat(particle, 110, 0, 0));
+                } else {
+                    painter.println(Particle.getXYZformat(particle, 0, 0, 0));
+                }
                 for(Particle neighbour : getNeighbours(particle)) {
                     double distance = Particle.getDistance(particle, neighbour);
                     if(distance < rc) {
                         s = "Particle " + particle.getId() + " to Particle " + neighbour.getId() + ": " + distance;
                         writer.println(s);
+                        if (actual) {
+                            painter.println(Particle.getXYZformat(neighbour, 110, 110, 0));
+                        } else {
+                            painter.println(Particle.getXYZformat(particle, 0, 0, 0));
+                        }gi
                     }
                 }
             }
