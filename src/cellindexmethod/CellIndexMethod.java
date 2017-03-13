@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
  * Created by sebastian on 3/12/17.
  */
@@ -22,16 +23,18 @@ public class CellIndexMethod {
     private double l;
     private double rc;
     private int m;
+    private int distinguished;
 
     private List<Particle> particles;
     private boolean periodicBoundry = false;
     private Map<Integer, Set<Integer>> neighbours = new HashMap<>();
 
-    public CellIndexMethod(double l, double rc, int m, List<Particle> particles, boolean periodicBoundry) {
+    public CellIndexMethod(double l, double rc, int m, List<Particle> particles, int distinguished,  boolean periodicBoundry) {
         this.l = l;
         this.rc = rc;
         this.m = m;
-        cellLenght = l / m;
+        this.distinguished = distinguished;
+        cellLenght = l/m;
         this.particles = particles;
         this.periodicBoundry = periodicBoundry;
         insertParticles(m, particles);
@@ -114,7 +117,7 @@ public class CellIndexMethod {
         }
 
         for (Particle p : neighbourCell) {
-            neighbours.add(new Particle(p.getId(), p.getRadius(), p.getPosition().x + deltaX, p.getPosition().y + deltaY));
+            neighbours.add(new Particle(p.getId(), p.getRadius(), p.getRc() ,p.getPosition().x + deltaX, p.getPosition().y + deltaY));
         }
 
     }
@@ -193,7 +196,38 @@ public class CellIndexMethod {
         }
 
         System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " cant " + cant);
+//        this.generateFileWithDistinction(this.distinguished, particles, "brute-force");
     }
 
+
+    private void generateFileWithDistinction(int id, List<Particle> particles, String method) {
+        Set<Particle> aux = new HashSet<>();
+
+        try {
+            PrintWriter painter = new PrintWriter("cell-and-neig-"+method+".xyz", "UTF-8");
+
+            painter.println((int)(this.particles.size()));
+            painter.println(this.l);
+
+            Particle selectedOne = particles.get(id);
+            painter.println(Particle.getXYZformat(selectedOne, 110, 110, 0));
+            for (Particle neighbour :
+                    this.getNeighbours(selectedOne)) {
+                painter.println(Particle.getXYZformat(neighbour, 110, 0, 0));
+                aux.add(neighbour);
+            }
+
+            aux.add(selectedOne);
+
+            for (Particle particle :
+                    particles) {
+                if (aux.contains(particle)) continue;
+                painter.println(Particle.getXYZformat(particle, 255, 255, 255));
+            }
+            painter.close();
+        } catch(IOException e) {
+
+        }
+    }
 
 }
