@@ -4,6 +4,11 @@ import models.Particle;
 import models.Point;
 
 import java.util.*;
+import java.io.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by sebastian on 3/12/17.
@@ -135,9 +140,9 @@ public class CellIndexMethod {
                         neighbours.put(neighbour.getId(), particleSetNeighbour);
                     }
                 }
-
             }
         }
+
         System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " M: " + m + " N: " + particles.size() + " cant: " + cant);
         for (Integer p : neighbours.keySet()) {
             System.out.print(p + " ");
@@ -149,13 +154,35 @@ public class CellIndexMethod {
 
     }
 
+    public void writeResults() {
+        String s = "";
+
+        try {
+            PrintWriter writer = new PrintWriter("cellIndexMethod.txt", "UTF-8");
+
+            for (Integer particleId : neighbours.keySet()) {
+                s = particleId + " ";
+                for (Integer neighbourId : neighbours.get(particleId)) {
+                    s += neighbourId + ", ";
+
+                }
+            }
+            writer.println(s);
+            writer.println("***************************************************************************************");
+            writer.close();
+        } catch (IOException e) {
+            // do something
+        }
+
+    }
+
     private boolean alreadyCalculated(Particle particle, Particle neighbour) {
         return neighbours.containsKey(particle) && neighbours.get(particle).contains(neighbour);
     }
 
     public void calculateDistancesWithBruteForce() {
-        int cant = 0;
         long start = System.currentTimeMillis();
+        int cant = 0;
         for (Particle particle : particles) {
             for (Particle neighbour : particles) {
                 if (particle == neighbour) continue;
@@ -164,6 +191,7 @@ public class CellIndexMethod {
                     cant++;
             }
         }
+
         System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " cant " + cant);
     }
 
