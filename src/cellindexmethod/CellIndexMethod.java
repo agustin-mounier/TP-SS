@@ -22,14 +22,16 @@ public class CellIndexMethod {
     private double l;
     private double rc;
     private int m;
+    private int distinguished;
 
     private List<Particle> particles;
 
     // TODO: What's "condiciones periodicas de contorno"
-    public CellIndexMethod(double l, double rc, int m, List<Particle> particles) {
+    public CellIndexMethod(double l, double rc, int m, List<Particle> particles, int distinguished) {
         this.l = l;
         this.rc = rc;
         this.m = m;
+        this.distinguished = distinguished;
         cellLenght = l/m;
         this.particles = particles;
         insertParticles(m, particles);
@@ -70,37 +72,16 @@ public class CellIndexMethod {
     public void calculateDistances() {
         long start = System.currentTimeMillis();
         String s;
-        int cant = 0;
-        Random r = new Random();
-        int randomInt = r.nextInt() * this.particles.size();
-        boolean actual = false;
 
         try{
             PrintWriter writer = new PrintWriter("cellIndexMethod.txt", "UTF-8");
-            PrintWriter painter = new PrintWriter("cell-and-neig.xyz", "UTF-8");
 
             for(Particle particle : particles) {
-                if (randomInt == cant) {
-                    actual = true;
-                } else if (randomInt == cant -1) {
-                    actual = false;
-                }
-                cant++;
-                if (actual) {
-                    painter.println(Particle.getXYZformat(particle, 110, 0, 0));
-                } else {
-                    painter.println(Particle.getXYZformat(particle, 0, 0, 0));
-                }
                 for(Particle neighbour : getNeighbours(particle)) {
                     double distance = Particle.getDistance(particle, neighbour);
                     if(distance < rc) {
                         s = "Particle " + particle.getId() + " to Particle " + neighbour.getId() + ": " + distance;
                         writer.println(s);
-                        if (actual) {
-                            painter.println(Particle.getXYZformat(neighbour, 110, 110, 0));
-                        } else {
-                            painter.println(Particle.getXYZformat(particle, 0, 0, 0));
-                        }gi
                     }
                 }
             }
@@ -110,6 +91,8 @@ public class CellIndexMethod {
         } catch (IOException e) {
             // do something
         }
+
+        this.generateFileWithDistinction(this.distinguished, particles, "cell-index");
     }
 
     public void calculateDistancesWithBruteForce() {
@@ -134,7 +117,39 @@ public class CellIndexMethod {
         } catch (IOException e) {
             // do something
         }
+
+        this.generateFileWithDistinction(this.distinguished, particles, "brute-force");
     }
 
+
+    private void generateFileWithDistinction(int id, List<Particle> particles, String method) {
+        Set<Particle> aux = new HashSet<>();
+
+        try {
+            PrintWriter painter = new PrintWriter("cell-and-neig-"+method+".xyz", "UTF-8");
+
+            painter.println((int)(this.particles.size()));
+            painter.println(this.l);
+
+            Particle selectedOne = particles.get(id);
+            painter.println(Particle.getXYZformat(selectedOne, 110, 110, 0));
+            for (Particle neighbour :
+                    this.getNeighbours(selectedOne)) {
+                painter.println(Particle.getXYZformat(neighbour, 110, 0, 0));
+                aux.add(neighbour);
+            }
+
+            aux.add(selectedOne);
+
+            for (Particle particle :
+                    particles) {
+                if (aux.contains(particle)) continue;
+                painter.println(Particle.getXYZformat(particle, 255, 255, 255));
+            }
+            painter.close();
+        } catch(IOException e) {
+
+        }
+    }
 
 }
