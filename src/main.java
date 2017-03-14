@@ -5,10 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.StringTokenizer;
+import java.util.*;
 
 
 /**
@@ -23,7 +20,7 @@ public class main {
      */
 
     private static int CANT_PARTICLES = 1000;
-    private static int L = 20;
+    private static double L = 20;
     private static double RADIUS = 0.25;
     private static final double RC = 1;
     private static final int M = (int) Math.ceil(L / (RC + 2 * RADIUS));
@@ -41,36 +38,17 @@ public class main {
 
         Random r = new Random();
         DISTINGUISHED = r.nextInt(CANT_PARTICLES);
-//        try {
-//            PrintWriter writer = new PrintWriter("all-cells.xyz", "UTF-8");
-//            writer.println(CANT_PARTICLES);
-//            writer.println(L);
-//            for (int i = 0; i < CANT_PARTICLES; i++) {
-//                double x = L * r.nextDouble();
-//                double y = L * r.nextDouble();
-//                Particle particle = new Particle(i, RADIUS, x, y);
-//                while (!isValid(particle)) {
-//                    x = L * r.nextDouble();
-//                    y = L * r.nextDouble();
-//                    particle = new Particle(i, RADIUS, x, y);
-//                }
-//
-//                writer.println(Particle.getXYZformat(particle, 255, 255, 255));
-//                //particles.add(particle);
-//            }
-//            writer.close();
-//        } catch (IOException e) {
-//            // do something
-//        }
 
         readStaticFile();
         readDynamicFile();
         CellIndexMethod cellIndexMethod = new CellIndexMethod(L, RC, M, particles, DISTINGUISHED, false);
         cellIndexMethod.calculateDistances();
         cellIndexMethod.calculateDistancesWithBruteForce();
+        cellIndexMethod.generateFileWithDistinction(DISTINGUISHED, particles);
+        //generateRandomFiles(1000,25,0.25,1);
     }
 
-    public static boolean isValid(Particle p) {
+    public static boolean isValid(Particle p, List<Particle> particles) {
         for (Particle p2 : particles) {
             if (Particle.getDistance(p, p2) < 0)
                 return false;
@@ -79,12 +57,13 @@ public class main {
     }
 
     private static void readStaticFile() {
-        BufferedReader bufferedReader = null;
+        BufferedReader bufferedReader;
         try {
             String sCurrentLine;
             int i = 0;
             int particleId = 0;
-            bufferedReader = new BufferedReader(new FileReader(STATIC_FILE));
+            bufferedReader = new BufferedReader(new FileReader("static-random.txt"));
+            List<Double> aux;
             while ((sCurrentLine = bufferedReader.readLine()) != null) {
                 StringTokenizer tk = new StringTokenizer(sCurrentLine);
 
@@ -95,27 +74,16 @@ public class main {
                     i++;
                     continue;
                 } else if (i == 1) {
-                    L = Integer.parseInt(sCurrentLine);
+                    L = Double.parseDouble(sCurrentLine);
                     i++;
                     continue;
                 }
-                double radius = 0, property = 0;
-                int auxCount = 0;
-                while (tk.hasMoreTokens()) {
-                    switch (auxCount) {
-                        case 0:
-                            radius = Double.parseDouble(tk.nextToken());
-                            break;
-                        case 1:
-                            property = Double.parseDouble(tk.nextToken());
-                            break;
-                        default:
-                            tk.nextToken();
-                            break;
-                    }
-                    auxCount++;
-                }
-                ;
+
+                double radius, property;
+                aux = reader(tk);
+                radius = aux.get(0);
+                property = aux.get(1);
+
                 particles.add(new Particle(particleId, radius, property, 0, 0));
                 particleId++;
             }
@@ -131,7 +99,8 @@ public class main {
             String sCurrentLine;
             int i = 0;
             int particleId = 0;
-            bufferedReader = new BufferedReader(new FileReader(DYNAMIC_FILE));
+            List<Double> aux;
+            bufferedReader = new BufferedReader(new FileReader("dynamic-random.txt"));
             while ((sCurrentLine = bufferedReader.readLine()) != null) {
                 StringTokenizer tk = new StringTokenizer(sCurrentLine);
                 if (i == 0) {
@@ -139,23 +108,10 @@ public class main {
                     i++;
                     continue;
                 }
-                double x = 0, y = 0;
-                int auxCount = 0;
-                while (tk.hasMoreTokens()) {
-                    switch (auxCount) {
-                        case 0:
-                            x = Double.parseDouble(tk.nextToken());
-                            break;
-                        case 1:
-                            y = Double.parseDouble(tk.nextToken());
-                            break;
-                        default:
-                            tk.nextToken();
-                            break;
-                    }
-                    auxCount++;
-                }
-                ;
+                double x, y;
+                aux = reader(tk);
+                x = aux.get(0);
+                y = aux.get(1);
                 particles.get(particleId).setPosition(x, y);
                 particleId++;
             }
@@ -163,6 +119,63 @@ public class main {
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
+    }
+
+    /*
+     * Recieves a String Tokenizer reprsenting a line.
+     * Reads from 2 column text and saves the first column value on v1
+     * and the second value on v2 of a returned arraylist.
+     *
+     */
+    private static List<Double> reader(StringTokenizer tk) {
+        List<Double> answer = new ArrayList<>();
+        int auxCount = 0;
+        while (tk.hasMoreTokens()) {
+            switch (auxCount) {
+                case 0:
+                    answer.add(Double.parseDouble(tk.nextToken()));
+                    break;
+                case 1:
+                    answer.add(Double.parseDouble(tk.nextToken()));
+                    break;
+                default:
+                    tk.nextToken();
+                    break;
+            }
+            auxCount++;
+        }
+        return answer;
+    }
+
+    private static void generateRandomFiles(int cant_particles, double l, double radius, double rc) {
+        Random r = new Random();
+        List<Particle> particles = new ArrayList<>(cant_particles);
+        try {
+            PrintWriter staticWriter = new PrintWriter("static-random.txt", "UTF-8");
+            PrintWriter dynamicWriter = new PrintWriter("dynamic-random.txt", "UTF-8");
+
+            staticWriter.println(cant_particles);
+            staticWriter.println(l);
+            dynamicWriter.println(0);
+
+            for (int i = 0; i < cant_particles; i++) {
+                double x = l * r.nextDouble();
+                double y = l * r.nextDouble();
+                Particle particle = new Particle(i, radius, rc, x, y);
+                while (!isValid(particle, particles)) {
+                    x = l * r.nextDouble();
+                    y = l * r.nextDouble();
+                    particle = new Particle(i, radius, rc, x, y);
+                }
+                staticWriter.println(particle.getRadius() + "\t" + particle.getRc());
+                dynamicWriter.println(particle.getPosition().x + "\t" + particle.getPosition().y);
+                particles.add(particle);
+            }
+            staticWriter.close();
+            dynamicWriter.close();
+        } catch (IOException e) {
+            // do something
+       }
     }
 }
 

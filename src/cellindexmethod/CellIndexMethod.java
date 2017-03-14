@@ -196,17 +196,16 @@ public class CellIndexMethod {
         }
 
         System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " cant " + cant);
-//        this.generateFileWithDistinction(this.distinguished, particles, "brute-force");
     }
 
 
-    private void generateFileWithDistinction(int id, List<Particle> particles, String method) {
+    public void generateFileWithDistinction(int id, List<Particle> particles) {
         Set<Particle> aux = new HashSet<>();
 
         try {
-            PrintWriter painter = new PrintWriter("cell-and-neig-"+method+".xyz", "UTF-8");
+            PrintWriter painter = new PrintWriter("cell-and-neig.xyz", "UTF-8");
 
-            painter.println((int)(this.particles.size()));
+            painter.println((int)(particles.size()));
             painter.println(this.l);
 
             Particle selectedOne = particles.get(id);
