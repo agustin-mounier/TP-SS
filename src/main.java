@@ -62,7 +62,8 @@ public class main {
             String sCurrentLine;
             int i = 0;
             int particleId = 0;
-            bufferedReader = new BufferedReader(new FileReader("static-random.txt"));
+            bufferedReader = new BufferedReader(new FileReader(STATIC_FILE));
+            //bufferedReader = new BufferedReader(new FileReader("static-random.txt"));
             List<Double> aux;
             while ((sCurrentLine = bufferedReader.readLine()) != null) {
                 StringTokenizer tk = new StringTokenizer(sCurrentLine);
@@ -100,7 +101,8 @@ public class main {
             int i = 0;
             int particleId = 0;
             List<Double> aux;
-            bufferedReader = new BufferedReader(new FileReader("dynamic-random.txt"));
+            bufferedReader = new BufferedReader(new FileReader(DYNAMIC_FILE));
+            //bufferedReader = new BufferedReader(new FileReader("dynamic-random.txt"));
             while ((sCurrentLine = bufferedReader.readLine()) != null) {
                 StringTokenizer tk = new StringTokenizer(sCurrentLine);
                 if (i == 0) {

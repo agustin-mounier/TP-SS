@@ -133,14 +133,22 @@ public class CellIndexMethod {
                     cant++;
                     if (neighbours.containsKey(particle.getId())) {
                         neighbours.get(particle.getId()).add(neighbour.getId());
+
+                        if (neighbours.containsKey(neighbour.getId())) {
+                            neighbours.get(neighbour.getId()).add(particle.getId());
+                        } else {
+                            Set<Integer> neighbourSet = new HashSet<>();
+                            neighbourSet.add(particle.getId());
+                            neighbours.put(neighbour.getId(), neighbourSet);
+                        }
                     } else {
                         Set<Integer> particleSet = new HashSet<>();
                         particleSet.add(neighbour.getId());
                         neighbours.put(particle.getId(), particleSet);
 
-                        Set<Integer> particleSetNeighbour = new HashSet<>();
-                        particleSetNeighbour.add(particle.getId());
-                        neighbours.put(neighbour.getId(), particleSetNeighbour);
+                        Set<Integer> neighbourSet = new HashSet<>();
+                        neighbourSet.add(particle.getId());
+                        neighbours.put(neighbour.getId(), neighbourSet);
                     }
                 }
             }
@@ -212,7 +220,19 @@ public class CellIndexMethod {
             painter.println(Particle.getXYZformat(selectedOne, 110, 110, 0));
             for (Particle neighbour :
                     this.getNeighbours(selectedOne)) {
-                painter.println(Particle.getXYZformat(neighbour, 110, 0, 0));
+                Set<Integer> particleNeighbours = neighbours.get(selectedOne.getId());
+
+                /*
+                 * Neighbours with distance < rc
+                 */
+                if (particleNeighbours != null && particleNeighbours.contains(neighbour.getId())) {
+                    painter.println(Particle.getXYZformat(neighbour, 110, 0, 0));
+                } else {
+                    /*
+                     * Neighbours in surrounding cells with distance > rc
+                     */
+                    painter.println(Particle.getXYZformat(neighbour, 0, 0, 110));
+                }
                 aux.add(neighbour);
             }
 
