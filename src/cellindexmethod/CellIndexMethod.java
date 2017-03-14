@@ -29,12 +29,12 @@ public class CellIndexMethod {
     private boolean periodicBoundry = false;
     private Map<Integer, Set<Integer>> neighbours = new HashMap<>();
 
-    public CellIndexMethod(double l, double rc, int m, List<Particle> particles, int distinguished,  boolean periodicBoundry) {
+    public CellIndexMethod(double l, double rc, int m, List<Particle> particles, int distinguished, boolean periodicBoundry) {
         this.l = l;
         this.rc = rc;
         this.m = m;
         this.distinguished = distinguished;
-        cellLenght = l/m;
+        cellLenght = l / m;
         this.particles = particles;
         this.periodicBoundry = periodicBoundry;
         insertParticles(m, particles);
@@ -116,10 +116,13 @@ public class CellIndexMethod {
             deltaY = l;
         }
 
-        for (Particle p : neighbourCell) {
-            neighbours.add(new Particle(p.getId(), p.getRadius(), p.getRc() ,p.getPosition().x + deltaX, p.getPosition().y + deltaY));
+        if (deltaX == 0 && deltaY == 0) {
+            neighbours.addAll(matrix[i][j]);
+        } else {
+            for (Particle p : neighbourCell) {
+                neighbours.add(new Particle(p.getId(), p.getRadius(), p.getRc(), p.getPosition().x + deltaX, p.getPosition().y + deltaY));
+            }
         }
-
     }
 
     public void calculateDistances() {
@@ -213,7 +216,7 @@ public class CellIndexMethod {
         try {
             PrintWriter painter = new PrintWriter("cell-and-neig.xyz", "UTF-8");
 
-            painter.println((int)(particles.size()));
+            painter.println((int) (particles.size()));
             painter.println(this.l);
 
             Particle selectedOne = particles.get(id);
@@ -244,7 +247,7 @@ public class CellIndexMethod {
                 painter.println(Particle.getXYZformat(particle, 255, 255, 255));
             }
             painter.close();
-        } catch(IOException e) {
+        } catch (IOException e) {
 
         }
     }
