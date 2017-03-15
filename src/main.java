@@ -23,7 +23,7 @@ public class main {
     private static double L = 20;
     private static double RADIUS = 0.25;
     private static final double RC = 1;
-    private static final int M = (int) Math.ceil(L / (RC + 2 * RADIUS));
+    private static int M = (int) Math.ceil(L / (RC + 2 * RADIUS));
     private static int DISTINGUISHED;
     private static int TIME;
 
@@ -39,13 +39,20 @@ public class main {
         Random r = new Random();
         DISTINGUISHED = r.nextInt(CANT_PARTICLES);
 
+        generateRandomFiles(20000,100,0.25,1);
+        //M = (int) Math.ceil(L / (RC + 2 * RADIUS));
         readStaticFile();
         readDynamicFile();
-        CellIndexMethod cellIndexMethod = new CellIndexMethod(L, RC, M, particles, DISTINGUISHED, false);
-        cellIndexMethod.calculateDistances();
-        cellIndexMethod.calculateDistancesWithBruteForce();
-        cellIndexMethod.generateFileWithDistinction(DISTINGUISHED, particles);
-        //generateRandomFiles(1000,25,0.25,1);
+
+        M = 30;
+        while (M < (L/RC)) {
+            CellIndexMethod cellIndexMethod = new CellIndexMethod(L, RC, M, particles, DISTINGUISHED, false);
+            cellIndexMethod.calculateDistances();
+            cellIndexMethod.generateFileWithDistinction(DISTINGUISHED, particles);
+            M++;
+        }
+
+        //cellIndexMethod.calculateDistancesWithBruteForce();
     }
 
     public static boolean isValid(Particle p, List<Particle> particles) {
@@ -62,8 +69,8 @@ public class main {
             String sCurrentLine;
             int i = 0;
             int particleId = 0;
-            bufferedReader = new BufferedReader(new FileReader(STATIC_FILE));
-            //bufferedReader = new BufferedReader(new FileReader("static-random.txt"));
+            //bufferedReader = new BufferedReader(new FileReader(STATIC_FILE));
+            bufferedReader = new BufferedReader(new FileReader("static-random.txt"));
             List<Double> aux;
             while ((sCurrentLine = bufferedReader.readLine()) != null) {
                 StringTokenizer tk = new StringTokenizer(sCurrentLine);
@@ -101,8 +108,8 @@ public class main {
             int i = 0;
             int particleId = 0;
             List<Double> aux;
-            bufferedReader = new BufferedReader(new FileReader(DYNAMIC_FILE));
-            //bufferedReader = new BufferedReader(new FileReader("dynamic-random.txt"));
+            //bufferedReader = new BufferedReader(new FileReader(DYNAMIC_FILE));
+            bufferedReader = new BufferedReader(new FileReader("dynamic-random.txt"));
             while ((sCurrentLine = bufferedReader.readLine()) != null) {
                 StringTokenizer tk = new StringTokenizer(sCurrentLine);
                 if (i == 0) {

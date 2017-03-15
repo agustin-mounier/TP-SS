@@ -27,7 +27,8 @@ public class CellIndexMethod {
 
     private List<Particle> particles;
     private boolean periodicBoundry = false;
-    private Map<Integer, Set<Integer>> neighbours = new HashMap<>();
+    private Map<Integer, Set<Integer>> interactionNeighbours = new HashMap<>();
+    private Map<Particle, Set<Particle>> cellNeighbours = new HashMap<>();
 
     public CellIndexMethod(double l, double rc, int m, List<Particle> particles, int distinguished, boolean periodicBoundry) {
         this.l = l;
@@ -38,6 +39,7 @@ public class CellIndexMethod {
         this.particles = particles;
         this.periodicBoundry = periodicBoundry;
         insertParticles(m, particles);
+        getAllCellNeighbours();
     }
 
     private void insertParticles(int m, List<Particle> particles) {
@@ -75,6 +77,30 @@ public class CellIndexMethod {
         }
         neighbours.remove(particle);
         return neighbours;
+    }
+
+    private void getAllCellNeighbours() {
+        for (Particle particle :
+                particles) {
+            Point point = particle.getPosition();
+            int cellX = (int) (point.x / cellLenght);
+            int cellY = (int) (point.y / cellLenght);
+
+            cellNeighbours.put(particle, new HashSet<>());
+
+            for(int i = cellX -1; i <= cellX +1 ; i++) {
+                if (!periodicBoundry && (i < 0 || i >= m)) continue;
+                for(int j = cellY; j <= cellY + 1; j++) {
+                    if ((!periodicBoundry && (j < 0 || j >= m)) || (i == cellX -1 && j == cellY)) continue;
+
+                    if (periodicBoundry)
+                        addNeighboursWithPeriodicBoundries(cellNeighbours.get(particle), i, j);
+                    else
+                        cellNeighbours.get(particle).addAll(matrix[i][j]);
+                }
+            }
+            cellNeighbours.get(particle).remove(particle);
+        }
     }
 
     private void addNeighboursWithPeriodicBoundries(Set<Particle> neighbours, int i, int j) {
@@ -129,42 +155,46 @@ public class CellIndexMethod {
         long start = System.currentTimeMillis();
         int cant = 0;
         for (Particle particle : particles) {
-            for (Particle neighbour : getNeighbours(particle)) {
+            for (Particle neighbour : cellNeighbours.get(particle)) {
                 if (alreadyCalculated(particle, neighbour)) continue;
                 double distance = Particle.getDistance(particle, neighbour);
                 if (distance < rc) {
                     cant++;
-                    if (neighbours.containsKey(particle.getId())) {
-                        neighbours.get(particle.getId()).add(neighbour.getId());
+                    if (interactionNeighbours.containsKey(particle.getId())) {
+                        interactionNeighbours.get(particle.getId()).add(neighbour.getId());
 
-                        if (neighbours.containsKey(neighbour.getId())) {
-                            neighbours.get(neighbour.getId()).add(particle.getId());
+                        if (interactionNeighbours.containsKey(neighbour.getId())) {
+                            interactionNeighbours.get(neighbour.getId()).add(particle.getId());
                         } else {
                             Set<Integer> neighbourSet = new HashSet<>();
                             neighbourSet.add(particle.getId());
-                            neighbours.put(neighbour.getId(), neighbourSet);
+                            interactionNeighbours.put(neighbour.getId(), neighbourSet);
                         }
                     } else {
                         Set<Integer> particleSet = new HashSet<>();
                         particleSet.add(neighbour.getId());
-                        neighbours.put(particle.getId(), particleSet);
+                        interactionNeighbours.put(particle.getId(), particleSet);
 
                         Set<Integer> neighbourSet = new HashSet<>();
                         neighbourSet.add(particle.getId());
-                        neighbours.put(neighbour.getId(), neighbourSet);
+                        interactionNeighbours.put(neighbour.getId(), neighbourSet);
                     }
                 }
             }
         }
 
-        System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " M: " + m + " N: " + particles.size() + " cant: " + cant);
-        for (Integer p : neighbours.keySet()) {
+        System.out.println(m + "\t" + (System.currentTimeMillis() - start) + "\t" + particles.size() + "\t" + l);
+        //System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " M: " + m + " N: " + particles.size() + " cant: " + cant);
+        /*
+        for (Integer p : interactionNeighbours.keySet()) {
+
             System.out.print(p + " ");
-            for (Integer n : neighbours.get(p)) {
+            for (Integer n : interactionNeighbours.get(p)) {
                 System.out.print(n + " ");
             }
             System.out.print("\n");
         }
+        */
 
     }
 
@@ -174,9 +204,9 @@ public class CellIndexMethod {
         try {
             PrintWriter writer = new PrintWriter("cellIndexMethod.txt", "UTF-8");
 
-            for (Integer particleId : neighbours.keySet()) {
+            for (Integer particleId : interactionNeighbours.keySet()) {
                 s = particleId + " ";
-                for (Integer neighbourId : neighbours.get(particleId)) {
+                for (Integer neighbourId : interactionNeighbours.get(particleId)) {
                     s += neighbourId + ", ";
 
                 }
@@ -191,7 +221,7 @@ public class CellIndexMethod {
     }
 
     private boolean alreadyCalculated(Particle particle, Particle neighbour) {
-        return neighbours.containsKey(particle) && neighbours.get(particle).contains(neighbour);
+        return interactionNeighbours.containsKey(particle) && interactionNeighbours.get(particle).contains(neighbour);
     }
 
     public void calculateDistancesWithBruteForce() {
@@ -223,7 +253,7 @@ public class CellIndexMethod {
             painter.println(Particle.getXYZformat(selectedOne, 110, 110, 0));
             for (Particle neighbour :
                     this.getNeighbours(selectedOne)) {
-                Set<Integer> particleNeighbours = neighbours.get(selectedOne.getId());
+                Set<Integer> particleNeighbours = interactionNeighbours.get(selectedOne.getId());
 
                 /*
                  * Neighbours with distance < rc
