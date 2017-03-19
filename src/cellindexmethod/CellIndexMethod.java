@@ -39,7 +39,7 @@ public class CellIndexMethod {
         this.particles = particles;
         this.periodicBoundry = periodicBoundry;
         insertParticles(m, particles);
-        getAllCellNeighbours();
+        getAllCellNeighbours(particles);
     }
 
     private void insertParticles(int m, List<? extends Particle> particles) {
@@ -79,7 +79,8 @@ public class CellIndexMethod {
         return neighbours;
     }
 
-    protected void getAllCellNeighbours() {
+    protected void getAllCellNeighbours(List<? extends Particle> particles) {
+        cellNeighbours.clear();
         for (Particle particle :
                 particles) {
             Point point = particle.getPosition();

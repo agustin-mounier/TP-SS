@@ -33,7 +33,7 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             double sinSum = 0;
             double cosSum = 0;
             int cant = 0;
-            for (Particle neighbour : getNeighbours(particle)) {
+            for (Particle neighbour : cellNeighbours.get(particle)) {
                 if (alreadyCalculated(particle, neighbour)) continue;
                 double distance = Particle.getDistance(particle, neighbour);
                 if (distance < rc) {
@@ -49,7 +49,7 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             cosSum += Math.cos(dynamicParticle.getAngle());
             cant++;
             double newAngle = Math.atan2(sinSum / cant, cosSum / cant) + deltaTheta;
-            particle.setPosition(particle.getPosition().x + Math.cos(newAngle), particle.getPosition().y + Math.sin(newAngle));
+            setNewPositionWithBoundry(particle, Math.cos(newAngle), Math.sin(newAngle), l);
             nextStep.add(new DynamicParticle(particle, newAngle, dynamicParticle.getVelocity()));
         }
         simulation.put(T + 1, nextStep);
@@ -60,6 +60,8 @@ public class OffLaticeAutomaton extends CellIndexMethod {
         while (T < TMax) {
             calculateDistances(T);
             T++;
+            cellNeighbours.clear();
+            getAllCellNeighbours(simulation.get(T));
         }
         createSimulationFile();
     }
@@ -80,7 +82,21 @@ public class OffLaticeAutomaton extends CellIndexMethod {
         }
     }
 
+    private void setNewPositionWithBoundry (Particle particle, double dx, double dy, double maxL) {
+        double newX = particle.getPosition().x + dx;
+        double newY = particle.getPosition().y + dy;
+        if (newX > maxL) {
+            newX = newX - maxL;
+        } else if (newX < maxL) {
+            newX = maxL + newX;
+        }
 
+        if (newY > maxL) {
+            newY = newY - maxL;
+        } else if (newY < maxL) {
+            newY = maxL + newY;
+        }
 
-
+        particle.setPosition(newX, newY);
+    }
 }
