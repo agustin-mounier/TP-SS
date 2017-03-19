@@ -49,8 +49,7 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             cosSum += Math.cos(dynamicParticle.getAngle());
             cant++;
             double newAngle = Math.atan2(sinSum / cant, cosSum / cant) + deltaTheta;
-            setNewPositionWithBoundry(particle, Math.cos(newAngle), Math.sin(newAngle), l);
-            nextStep.add(new DynamicParticle(particle, newAngle, dynamicParticle.getVelocity()));
+            nextStep.add(new DynamicParticle(setNewPositionWithBoundry(particle, Math.cos(newAngle), Math.sin(newAngle), l), newAngle, dynamicParticle.getVelocity()));
         }
         simulation.put(T + 1, nextStep);
     }
@@ -82,9 +81,10 @@ public class OffLaticeAutomaton extends CellIndexMethod {
         }
     }
 
-    private void setNewPositionWithBoundry (Particle particle, double dx, double dy, double maxL) {
+    private Particle setNewPositionWithBoundry (Particle particle, double dx, double dy, double maxL) {
         double newX = particle.getPosition().x + dx;
         double newY = particle.getPosition().y + dy;
+
         if (newX > maxL) {
             newX = newX - maxL;
         } else if (newX < maxL) {
@@ -97,6 +97,6 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             newY = maxL + newY;
         }
 
-        particle.setPosition(newX, newY);
+        return new Particle(particle.getId(), particle.getRadius(), particle.getRc(), newX, newY);
     }
 }

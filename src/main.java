@@ -37,14 +37,34 @@ public class main {
     static List<Particle> particles = new ArrayList<>();
 
     public static void main(String[] args) {
-        executeOffLaticeSimulation(300, 5, 1, 0.1, 0.03, 100);
+        executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 100);
     }
 
 
     public static void executeOffLaticeSimulation(int cantParticles, double L, double rc, double n, double vel, int TMax) {
         List<DynamicParticle> particles = generateRandomOffLaticeState(cantParticles, L, 0, rc, vel);
-        OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, false, n);
+        OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, true, n);
         offLaticeAutomaton.simulate(TMax);
+    }
+
+    private static List<DynamicParticle> generateRandomOffLaticeState(int cant_particles, double l, double radius, double rc, double vel) {
+        List<DynamicParticle> particles = new ArrayList<>(cant_particles);
+        Random r = new Random();
+        for (int i = 0; i < cant_particles; i++) {
+            double x = l * r.nextDouble();
+            double y = l * r.nextDouble();
+            double angle = 2*Math.PI * r.nextDouble();
+            DynamicParticle particle = new DynamicParticle(i, radius, rc, x, y, angle, vel);
+            while (!isValid(particle, particles)) {
+                x = l * r.nextDouble();
+                y = l * r.nextDouble();
+                particle = new DynamicParticle(i, radius, rc, x, y, angle, vel);
+            }
+            System.out.println(particle.toString());
+            particles.add(particle);
+        }
+
+        return particles;
     }
 
     /*
@@ -203,25 +223,6 @@ public class main {
        }
     }
 
-    private static List<DynamicParticle> generateRandomOffLaticeState(int cant_particles, double l, double radius, double rc, double vel) {
-        List<DynamicParticle> particles = new ArrayList<>(cant_particles);
-        Random r = new Random();
-        for (int i = 0; i < cant_particles; i++) {
-            double x = l * r.nextDouble();
-            double y = l * r.nextDouble();
-            double angle = 2*Math.PI * r.nextDouble();
-            DynamicParticle particle = new DynamicParticle(i, radius, rc, x, y, angle, vel);
-            while (!isValid(particle, particles)) {
-                x = l * r.nextDouble();
-                y = l * r.nextDouble();
-                particle = new DynamicParticle(i, radius, rc, x, y, angle, vel);
-            }
-
-            particles.add(particle);
-        }
-
-        return particles;
-    }
 }
 
 
