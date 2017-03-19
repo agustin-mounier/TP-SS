@@ -19,9 +19,9 @@ public class main {
      * particula en cuestion sea mayor que Rc.
      */
 
-    private static int CANT_PARTICLES = 1000;
-    private static double L = 20;
-    private static double RADIUS = 0.25;
+    private static int CANT_PARTICLES;
+    private static double L;
+    private static double RADIUS;
     private static final double RC = 1;
     private static int M = (int) Math.ceil(L / (RC + 2 * RADIUS));
     private static int DISTINGUISHED;
@@ -35,22 +35,28 @@ public class main {
 
     public static void main(String[] args) {
 
+    }
 
+    /*
+     *
+     * This is the function that generates a random files with random particles al along.
+     * After reading the files, it calculates the distances between the particles using,
+     * cell index method amd generates a file that allows to distinguish a random particle,
+     * its interactable neighbours and its cell neighbours.
+     *
+     */
+    private void generateSystem1() {
         Random r = new Random();
         DISTINGUISHED = r.nextInt(CANT_PARTICLES);
 
         generateRandomFiles(20000,100,0.25,1);
-        //M = (int) Math.ceil(L / (RC + 2 * RADIUS));
+        M = (int) Math.ceil(L / (RC + 2 * RADIUS));
         readStaticFile();
         readDynamicFile();
 
-        M = 30;
-        while (M < (L/RC)) {
-            CellIndexMethod cellIndexMethod = new CellIndexMethod(L, RC, M, particles, DISTINGUISHED, false);
-            cellIndexMethod.calculateDistances();
-            cellIndexMethod.generateFileWithDistinction(DISTINGUISHED, particles);
-            M++;
-        }
+        CellIndexMethod cellIndexMethod = new CellIndexMethod(L, RC, M, particles, DISTINGUISHED, false);
+        cellIndexMethod.calculateDistances();
+        cellIndexMethod.generateFileWithDistinction(DISTINGUISHED, particles);
 
         //cellIndexMethod.calculateDistancesWithBruteForce();
     }

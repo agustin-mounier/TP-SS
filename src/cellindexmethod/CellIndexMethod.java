@@ -198,7 +198,7 @@ public class CellIndexMethod {
 
     }
 
-    public void writeResults() {
+    private void writeResults() {
         String s = "";
 
         try {
