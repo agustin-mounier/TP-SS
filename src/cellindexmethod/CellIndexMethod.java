@@ -18,22 +18,22 @@ public class CellIndexMethod {
 
     Set<Particle>[][] matrix;
 
-    public double cellLenght;
+    protected double cellLenght;
 
-    private double l;
-    private double rc;
-    private int m;
-    private int distinguished;
+    protected double l;
+    protected double rc;
+    protected int m;
+    protected int distinguished;
 
-    private List<Particle> particles;
-    private boolean periodicBoundry = false;
-    private Map<Integer, Set<Integer>> interactionNeighbours = new HashMap<>();
-    private Map<Particle, Set<Particle>> cellNeighbours = new HashMap<>();
+    protected List<? extends Particle> particles;
+    protected boolean periodicBoundry = false;
+    protected Map<Integer, Set<Integer>> interactionNeighbours = new HashMap<>();
+    protected Map<Particle, Set<Particle>> cellNeighbours = new HashMap<>();
 
-    public CellIndexMethod(double l, double rc, int m, List<Particle> particles, int distinguished, boolean periodicBoundry) {
+    public CellIndexMethod(double l, double rc, double radius, List<? extends Particle> particles, int distinguished, boolean periodicBoundry) {
         this.l = l;
         this.rc = rc;
-        this.m = m;
+        this.m = (int) Math.ceil(l / (rc + 2 * radius));
         this.distinguished = distinguished;
         cellLenght = l / m;
         this.particles = particles;
@@ -42,7 +42,7 @@ public class CellIndexMethod {
         getAllCellNeighbours();
     }
 
-    private void insertParticles(int m, List<Particle> particles) {
+    private void insertParticles(int m, List<? extends Particle> particles) {
         matrix = new Set[m][m];
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < m; j++) {
@@ -79,7 +79,7 @@ public class CellIndexMethod {
         return neighbours;
     }
 
-    private void getAllCellNeighbours() {
+    protected void getAllCellNeighbours() {
         for (Particle particle :
                 particles) {
             Point point = particle.getPosition();
@@ -153,32 +153,12 @@ public class CellIndexMethod {
 
     public void calculateDistances() {
         long start = System.currentTimeMillis();
-        int cant = 0;
         for (Particle particle : particles) {
             for (Particle neighbour : cellNeighbours.get(particle)) {
                 if (alreadyCalculated(particle, neighbour)) continue;
                 double distance = Particle.getDistance(particle, neighbour);
                 if (distance < rc) {
-                    cant++;
-                    if (interactionNeighbours.containsKey(particle.getId())) {
-                        interactionNeighbours.get(particle.getId()).add(neighbour.getId());
-
-                        if (interactionNeighbours.containsKey(neighbour.getId())) {
-                            interactionNeighbours.get(neighbour.getId()).add(particle.getId());
-                        } else {
-                            Set<Integer> neighbourSet = new HashSet<>();
-                            neighbourSet.add(particle.getId());
-                            interactionNeighbours.put(neighbour.getId(), neighbourSet);
-                        }
-                    } else {
-                        Set<Integer> particleSet = new HashSet<>();
-                        particleSet.add(neighbour.getId());
-                        interactionNeighbours.put(particle.getId(), particleSet);
-
-                        Set<Integer> neighbourSet = new HashSet<>();
-                        neighbourSet.add(particle.getId());
-                        interactionNeighbours.put(neighbour.getId(), neighbourSet);
-                    }
+                    addNeighbourToMap(particle, neighbour);
                 }
             }
         }
@@ -196,6 +176,28 @@ public class CellIndexMethod {
         }
         */
 
+    }
+
+    protected void addNeighbourToMap(Particle particle, Particle neighbour) {
+        if (interactionNeighbours.containsKey(particle.getId())) {
+            interactionNeighbours.get(particle.getId()).add(neighbour.getId());
+
+            if (interactionNeighbours.containsKey(neighbour.getId())) {
+                interactionNeighbours.get(neighbour.getId()).add(particle.getId());
+            } else {
+                Set<Integer> neighbourSet = new HashSet<>();
+                neighbourSet.add(particle.getId());
+                interactionNeighbours.put(neighbour.getId(), neighbourSet);
+            }
+        } else {
+            Set<Integer> particleSet = new HashSet<>();
+            particleSet.add(neighbour.getId());
+            interactionNeighbours.put(particle.getId(), particleSet);
+
+            Set<Integer> neighbourSet = new HashSet<>();
+            neighbourSet.add(particle.getId());
+            interactionNeighbours.put(neighbour.getId(), neighbourSet);
+        }
     }
 
     private void writeResults() {
@@ -220,7 +222,7 @@ public class CellIndexMethod {
 
     }
 
-    private boolean alreadyCalculated(Particle particle, Particle neighbour) {
+    protected boolean alreadyCalculated(Particle particle, Particle neighbour) {
         return interactionNeighbours.containsKey(particle) && interactionNeighbours.get(particle).contains(neighbour);
     }
 
