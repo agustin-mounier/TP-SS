@@ -37,13 +37,14 @@ public class main {
     static List<Particle> particles = new ArrayList<>();
 
     public static void main(String[] args) {
-        executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 100);
+        // N - L - RC - n - v - T
+        executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 250);
     }
 
 
     public static void executeOffLaticeSimulation(int cantParticles, double L, double rc, double n, double vel, int TMax) {
         List<DynamicParticle> particles = generateRandomOffLaticeState(cantParticles, L, 0, rc, vel);
-        OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, true, n);
+        OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, false, n, vel);
         offLaticeAutomaton.simulate(TMax);
     }
 
@@ -60,7 +61,6 @@ public class main {
                 y = l * r.nextDouble();
                 particle = new DynamicParticle(i, radius, rc, x, y, angle, vel);
             }
-            System.out.println(particle.toString());
             particles.add(particle);
         }
 
