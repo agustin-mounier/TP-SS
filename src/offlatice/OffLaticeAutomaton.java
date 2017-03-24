@@ -21,6 +21,14 @@ public class OffLaticeAutomaton extends CellIndexMethod {
     private Map<Integer, List<DynamicParticle>> simulation = new HashMap<>();
     private Map<Integer, Double> vaEvolution = new HashMap<>();
 
+    public Map<Integer, List<DynamicParticle>> getSimulationMap() {
+        return simulation;
+    }
+
+    public Map<Integer, Double> getvaEvolutions() {
+        return vaEvolution;
+    }
+
     public OffLaticeAutomaton(double l, double rc, double radius, List<DynamicParticle> particles, int distinguished, boolean periodicBoundry, double n, double vel) {
         super(l, rc, radius, particles, distinguished, periodicBoundry);
         this.n = n;
@@ -66,11 +74,10 @@ public class OffLaticeAutomaton extends CellIndexMethod {
         }
         double va = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2)) / (this.particles.size() * vel);
         vaEvolution.put(T+1, va);
-        System.out.println(va);
         simulation.put(T + 1, nextStep);
     }
 
-    public void simulate(int TMax) {
+    public void simulate(int TMax, boolean print, double n, double d) {
         int T = 0;
         while (T < TMax) {
             calculateDistances(T);
@@ -78,12 +85,12 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             cellNeighbours.clear();
             getAllCellNeighbours(simulation.get(T));
         }
-        createSimulationFile();
+        if(print) createSimulationFile(n, d);
     }
 
-    private void createSimulationFile() {
+    private void createSimulationFile(double n, double d) {
         try {
-            PrintWriter painter = new PrintWriter("OffLaticeSimulation.xyz", "UTF-8");
+            PrintWriter painter = new PrintWriter("OffLaticeSimulation-n" + n + "-d" + String.format("%.02f", d) + ".xyz", "UTF-8");
             for (Integer t : simulation.keySet()) {
                 painter.println((int) (particles.size()));
                 painter.println(t);

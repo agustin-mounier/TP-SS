@@ -3,10 +3,7 @@ import models.DynamicParticle;
 import models.Particle;
 import offlatice.OffLaticeAutomaton;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 
 
@@ -29,6 +26,8 @@ public class main {
     private static int DISTINGUISHED;
     private static int TIME;
 
+    private static PrintWriter vaAvgPrinter;
+
 
     private static final String STATIC_FILE = System.getProperty("user.dir") + "/Static100.txt";
     private static final String DYNAMIC_FILE = System.getProperty("user.dir") + "/Dynamic100.txt";
@@ -36,16 +35,31 @@ public class main {
 
     static List<Particle> particles = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
+        vaAvgPrinter = new PrintWriter("vaAvgs.txt", "UTF-8");
+
         // N - L - RC - n - v - T
         executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 250);
+        executeOffLaticeSimulation(300, 7.0, 1.0, 0.1, 0.03, 250);
+        executeOffLaticeSimulation(300, 15.0, 1.0, 0.1, 0.03, 250);
+        executeOffLaticeSimulation(300, 25.0, 1.0, 0.1, 0.03, 250);
+
+        //executeOffLaticeSimulation(1650, 5.0, 1.0, 0.1, 0.03, 250);
+        //executeOffLaticeSimulation(1650, 7.0, 1.0, 0.1, 0.03, 250);
+
+        executeOffLaticeSimulation(3000, 15.0, 1.0, 0.1, 0.03, 250);
+        executeOffLaticeSimulation(3000, 25.0, 1.0, 0.1, 0.03, 250);
+
+        vaAvgPrinter.close();
     }
 
 
     public static void executeOffLaticeSimulation(int cantParticles, double L, double rc, double n, double vel, int TMax) {
+        System.out.println("Starting Simulation");
+        main.L = L;
+        main.CANT_PARTICLES = cantParticles;
         List<DynamicParticle> particles = generateRandomOffLaticeState(cantParticles, L, 0, rc, vel);
-        OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, false, n, vel);
-        offLaticeAutomaton.simulate(TMax);
+        generateRepetitions(10, particles, rc, n, vel, TMax);
     }
 
     private static List<DynamicParticle> generateRandomOffLaticeState(int cant_particles, double l, double radius, double rc, double vel) {
@@ -63,12 +77,33 @@ public class main {
             }
             particles.add(particle);
         }
-
+        System.out.println("\tFile generated");
         return particles;
     }
 
-    /*
-     *
+    private static void generateRepetitions(int repetitions, List<DynamicParticle> particles, double rc, double n, double vel, int TMax) {
+        double density = CANT_PARTICLES/Math.pow(L,2);
+        vaAvgPrinter.println("N\t" + CANT_PARTICLES + "\tL\t" + L + "\tdensity\t" + density + "\tn\t" + n + "\trepetitions\t" + repetitions);
+
+        Map<Integer, Map<Integer, Double>> vaRepetitions = new HashMap<>();
+
+        for(int i = 0; i < repetitions; i++) {
+            OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, false, n, vel);
+            offLaticeAutomaton.simulate(TMax, i == 0, n, density);
+            vaRepetitions.put(i, offLaticeAutomaton.getvaEvolutions());
+        }
+        for(int j = 1; j < TMax+1; j++) {
+            double auxAvg = 0;
+            for(int k = 0; k < repetitions; k++) {
+                auxAvg += vaRepetitions.get(k).get(j);
+            }
+
+            vaAvgPrinter.println("T\t" + j + "\tavg\t" + auxAvg/repetitions);
+        }
+    }
+
+
+    /**
      * This is the function that generates a random files with random particles al along.
      * After reading the files, it calculates the distances between the particles using,
      * cell index method amd generates a file that allows to distinguish a random particle,
