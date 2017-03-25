@@ -39,16 +39,16 @@ public class main {
         vaAvgPrinter = new PrintWriter("vaAvgs.txt", "UTF-8");
 
         // N - L - RC - n - v - T
-        executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(300, 7.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(300, 15.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(300, 25.0, 1.0, 0.1, 0.03, 250);
+        executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 1500);
+//        executeOffLaticeSimulation(300, 7.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(300, 15.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(300, 25.0, 1.0, 0.1, 0.03, 250);
 
         //executeOffLaticeSimulation(1650, 5.0, 1.0, 0.1, 0.03, 250);
         //executeOffLaticeSimulation(1650, 7.0, 1.0, 0.1, 0.03, 250);
 
-        executeOffLaticeSimulation(3000, 15.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(3000, 25.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(3000, 15.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(3000, 25.0, 1.0, 0.1, 0.03, 250);
 
         vaAvgPrinter.close();
     }
@@ -59,7 +59,7 @@ public class main {
         main.L = L;
         main.CANT_PARTICLES = cantParticles;
         List<DynamicParticle> particles = generateRandomOffLaticeState(cantParticles, L, 0, rc, vel);
-        generateRepetitions(10, particles, rc, n, vel, TMax);
+        generateRepetitions(1, particles, rc, n, vel, TMax);
     }
 
     private static List<DynamicParticle> generateRandomOffLaticeState(int cant_particles, double l, double radius, double rc, double vel) {
@@ -88,7 +88,7 @@ public class main {
         Map<Integer, Map<Integer, Double>> vaRepetitions = new HashMap<>();
 
         for(int i = 0; i < repetitions; i++) {
-            OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, false, n, vel);
+            OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, true, n, vel);
             offLaticeAutomaton.simulate(TMax, i == 0, n, density);
             vaRepetitions.put(i, offLaticeAutomaton.getvaEvolutions());
         }

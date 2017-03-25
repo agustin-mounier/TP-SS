@@ -61,8 +61,8 @@ public class OffLaticeAutomaton extends CellIndexMethod {
                 }
             }
             DynamicParticle dynamicParticle = (DynamicParticle) particle;
-            sinSum += Math.sin(Math.toDegrees(dynamicParticle.getAngle()));
-            cosSum += Math.cos(Math.toDegrees(dynamicParticle.getAngle()));
+            sinSum += Math.sin(dynamicParticle.getAngle());
+            cosSum += Math.cos(dynamicParticle.getAngle());
             cant++;
 
             double newAngle = Math.atan2(sinSum / cant, cosSum / cant) + deltaTheta;

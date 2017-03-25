@@ -1,5 +1,6 @@
 package cellindexmethod;
 
+import models.DynamicParticle;
 import models.Particle;
 import models.Point;
 
@@ -87,7 +88,7 @@ public class CellIndexMethod {
             int cellX = (int) (point.x / cellLenght);
             int cellY = (int) (point.y / cellLenght);
 
-            cellNeighbours.put(particle, new HashSet<>());
+            cellNeighbours.put(particle, new HashSet<Particle>());
 
             for(int i = cellX -1; i <= cellX +1 ; i++) {
                 if (!periodicBoundry && (i < 0 || i >= m)) continue;
@@ -147,7 +148,8 @@ public class CellIndexMethod {
             neighbours.addAll(matrix[i][j]);
         } else {
             for (Particle p : neighbourCell) {
-                neighbours.add(new Particle(p.getId(), p.getRadius(), p.getRc(), p.getPosition().x + deltaX, p.getPosition().y + deltaY));
+                DynamicParticle dp = (DynamicParticle) p;
+                neighbours.add(new DynamicParticle(p.getId(), p.getRadius(), p.getRc(), p.getPosition().x + deltaX, p.getPosition().y + deltaY, dp.getAngle(), dp.getVelocity()));
             }
         }
     }
