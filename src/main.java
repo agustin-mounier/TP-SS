@@ -28,27 +28,22 @@ public class main {
 
     private static PrintWriter vaAvgPrinter;
 
-
-    private static final String STATIC_FILE = System.getProperty("user.dir") + "/Static100.txt";
-    private static final String DYNAMIC_FILE = System.getProperty("user.dir") + "/Dynamic100.txt";
-
-
     static List<Particle> particles = new ArrayList<>();
 
     public static void main(String[] args) throws FileNotFoundException, UnsupportedEncodingException {
         vaAvgPrinter = new PrintWriter("vaAvgs.txt", "UTF-8");
 
         // N - L - RC - n - v - T
-        executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(300, 7.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(300, 15.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(300, 25.0, 1.0, 0.1, 0.03, 250);
+        executeOffLaticeSimulation(300, 5.0, 1.0, 0.1, 0.03, 1000);
+//        executeOffLaticeSimulation(300, 7.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(300, 15.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(300, 25.0, 1.0, 0.1, 0.03, 250);
 
         //executeOffLaticeSimulation(1650, 5.0, 1.0, 0.1, 0.03, 250);
         //executeOffLaticeSimulation(1650, 7.0, 1.0, 0.1, 0.03, 250);
 
-        executeOffLaticeSimulation(3000, 15.0, 1.0, 0.1, 0.03, 250);
-        executeOffLaticeSimulation(3000, 25.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(3000, 15.0, 1.0, 0.1, 0.03, 250);
+//        executeOffLaticeSimulation(3000, 25.0, 1.0, 0.1, 0.03, 250);
 
         vaAvgPrinter.close();
     }
@@ -58,12 +53,12 @@ public class main {
         System.out.println("Starting Simulation");
         main.L = L;
         main.CANT_PARTICLES = cantParticles;
-        List<DynamicParticle> particles = generateRandomOffLaticeState(cantParticles, L, 0, rc, vel);
-        generateRepetitions(10, particles, rc, n, vel, TMax);
+        List<Particle> particles = generateRandomOffLaticeState(cantParticles, L, 0, rc, vel);
+        generateRepetitions(1, particles, rc, n, vel, TMax);
     }
 
-    private static List<DynamicParticle> generateRandomOffLaticeState(int cant_particles, double l, double radius, double rc, double vel) {
-        List<DynamicParticle> particles = new ArrayList<>(cant_particles);
+    private static List<Particle> generateRandomOffLaticeState(int cant_particles, double l, double radius, double rc, double vel) {
+        List<Particle> particles = new ArrayList<>(cant_particles);
         Random r = new Random();
         for (int i = 0; i < cant_particles; i++) {
             double x = l * r.nextDouble();
@@ -81,14 +76,14 @@ public class main {
         return particles;
     }
 
-    private static void generateRepetitions(int repetitions, List<DynamicParticle> particles, double rc, double n, double vel, int TMax) {
+    private static void generateRepetitions(int repetitions, List<Particle> particles, double rc, double n, double vel, int TMax) {
         double density = CANT_PARTICLES/Math.pow(L,2);
         vaAvgPrinter.println("N\t" + CANT_PARTICLES + "\tL\t" + L + "\tdensity\t" + density + "\tn\t" + n + "\trepetitions\t" + repetitions);
 
         Map<Integer, Map<Integer, Double>> vaRepetitions = new HashMap<>();
 
         for(int i = 0; i < repetitions; i++) {
-            OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, false, n, vel);
+            OffLaticeAutomaton offLaticeAutomaton = new OffLaticeAutomaton(L, rc, 0, particles, 0, true, n, vel);
             offLaticeAutomaton.simulate(TMax, i == 0, n, density);
             vaRepetitions.put(i, offLaticeAutomaton.getvaEvolutions());
         }

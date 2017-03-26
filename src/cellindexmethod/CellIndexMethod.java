@@ -1,5 +1,6 @@
 package cellindexmethod;
 
+import models.DynamicParticle;
 import models.Particle;
 import models.Point;
 
@@ -87,7 +88,7 @@ public class CellIndexMethod {
             int cellX = (int) (point.x / cellLenght);
             int cellY = (int) (point.y / cellLenght);
 
-            cellNeighbours.put(particle, new HashSet<>());
+            cellNeighbours.put(particle, new HashSet<Particle>());
 
             for(int i = cellX -1; i <= cellX +1 ; i++) {
                 if (!periodicBoundry && (i < 0 || i >= m)) continue;
@@ -147,9 +148,11 @@ public class CellIndexMethod {
             neighbours.addAll(matrix[i][j]);
         } else {
             for (Particle p : neighbourCell) {
-                neighbours.add(new Particle(p.getId(), p.getRadius(), p.getRc(), p.getPosition().x + deltaX, p.getPosition().y + deltaY));
+                DynamicParticle dp = (DynamicParticle) p;
+                neighbours.add(new DynamicParticle(p.getId(), p.getRadius(), p.getRc(), p.getPosition().x + deltaX, p.getPosition().y + deltaY, dp.getAngle(), dp.getVelocity()));
             }
         }
+
     }
 
     public void calculateDistances() {
@@ -283,6 +286,80 @@ public class CellIndexMethod {
         } catch (IOException e) {
 
         }
+    }
+
+    public Map<Particle, Set<Particle>> findNeighbors(List<Particle> particles) {
+
+        Map<Particle, Set<Particle>> map = new HashMap<>();
+
+        for (Particle particle : particles) {
+
+            if (!map.containsKey(particle))
+                map.put(particle, new HashSet<Particle>());
+
+            Point coords = particle.getPosition();
+            int x = (int) coords.x / m;
+            int y = (int) coords.y / m;
+            Set<Particle> aux;
+
+            aux = matrix[x][y];
+            addNeighbors(aux, particle, map, 0, 0);
+
+            aux = matrix[(x - 1 + m) % m][y];
+            if (x - 1 >= 0) {
+                addNeighbors(aux, particle, map, 0, 0);
+            } else if (periodicBoundry) {
+                addNeighbors(aux, particle, map, -1, 0);
+            }
+
+            aux = matrix[(x - 1 + m) % m][(y + 1) % m];
+            if (x - 1 >= 0 && y + 1 < m) {
+                addNeighbors(aux, particle, map, 0, 0);
+            } else if (periodicBoundry) {
+                addNeighbors(aux, particle, map, x - 1 >= 0 ? 0 : -1, y + 1 < m ? 0 : 1);
+            }
+
+            aux = matrix[x][(y + 1) % m];
+            if (y + 1 < m) {
+                addNeighbors(aux, particle, map, 0, 0);
+            } else if (periodicBoundry) {
+                addNeighbors(aux, particle, map, 0, 1);
+            }
+
+            aux = matrix[(x + 1) % m][(y + 1) % m];
+            if (x + 1 < m && y + 1 < m) {
+                addNeighbors(aux, particle, map, 0, 0);
+            } else if (periodicBoundry) {
+                addNeighbors(aux, particle, map, x + 1 < m ? 0 : 1, y + 1 < m ? 0 : 1);
+            }
+
+        }
+
+        return map;
+    }
+
+    private void addNeighbors(Set<Particle> c, Particle p, Map<Particle, Set<Particle>> m, int deltaX,
+                              int deltaY) {
+
+        for (Particle candidate : c) {
+            if (!candidate.equals(p)) {
+                if (!m.get(p).contains(candidate)) {
+                    double distance = Math.max(getDistance(p, candidate, deltaX, deltaY), 0);
+                    if (distance <= rc) {
+                        m.get(p).add(candidate);
+                        if (!m.containsKey(candidate))
+                            m.put(candidate, new HashSet<Particle>());
+                        m.get(candidate).add(p);
+                    }
+                }
+            }
+        }
+    }
+
+    private double getDistance(Particle fixed, Particle moving, int deltaX, int deltaY) {
+        return Math
+                .sqrt(Math.pow(fixed.getPosition().x - (moving.getPosition().x + deltaX * l), 2) + Math.pow(fixed.getPosition().y - (moving.getPosition().y + deltaY * l), 2))
+                - fixed.getRadius() - moving.getRadius();
     }
 
 }

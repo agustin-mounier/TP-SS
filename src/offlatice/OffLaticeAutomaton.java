@@ -18,18 +18,14 @@ public class OffLaticeAutomaton extends CellIndexMethod {
 
     private double n;
     private double vel;
-    private Map<Integer, List<DynamicParticle>> simulation = new HashMap<>();
+    private Map<Integer, List<Particle>> simulation = new HashMap<>();
     private Map<Integer, Double> vaEvolution = new HashMap<>();
-
-    public Map<Integer, List<DynamicParticle>> getSimulationMap() {
-        return simulation;
-    }
 
     public Map<Integer, Double> getvaEvolutions() {
         return vaEvolution;
     }
 
-    public OffLaticeAutomaton(double l, double rc, double radius, List<DynamicParticle> particles, int distinguished, boolean periodicBoundry, double n, double vel) {
+    public OffLaticeAutomaton(double l, double rc, double radius, List<Particle> particles, int distinguished, boolean periodicBoundry, double n, double vel) {
         super(l, rc, radius, particles, distinguished, periodicBoundry);
         this.n = n;
         this.vel = vel;
@@ -38,31 +34,30 @@ public class OffLaticeAutomaton extends CellIndexMethod {
 
 
     public void calculateDistances(int T) {
-        List<DynamicParticle> nextStep = new ArrayList<>();
+
+        Map<Particle, Set<Particle>> neighbours = findNeighbors(simulation.get(T));
+
+        List<Particle> nextStep = new ArrayList<>();
         Random random = new Random();
         double vx = 0;
         double vy = 0;
         for (Particle particle : simulation.get(T)) {
-            double deltaTheta = -1 * n / 2 + random.nextDouble() * n;
+            double deltaTheta = (-1 * (n / 2)) + (random.nextDouble() * n);
             double sinSum = 0;
             double cosSum = 0;
             double dx, dy;
 
             int cant = 0;
-            for (Particle neighbour : cellNeighbours.get(particle)) {
-                if (alreadyCalculated(particle, neighbour)) continue;
-                double distance = Particle.getDistance(particle, neighbour);
-                if (distance < rc) {
-                    addNeighbourToMap(particle, neighbour);
-                    DynamicParticle dynamicNeighbour = (DynamicParticle) neighbour;
-                    sinSum += Math.sin(dynamicNeighbour.getAngle());
-                    cosSum += Math.cos(dynamicNeighbour.getAngle());
-                    cant++;
-                }
+            for (Particle neighbour : neighbours.get(particle)) {
+//                addNeighbourToMap(particle, neighbour);
+                DynamicParticle dynamicNeighbour = (DynamicParticle) neighbour;
+                sinSum += Math.sin(dynamicNeighbour.getAngle());
+                cosSum += Math.cos(dynamicNeighbour.getAngle());
+                cant++;
             }
             DynamicParticle dynamicParticle = (DynamicParticle) particle;
-            sinSum += Math.sin(Math.toDegrees(dynamicParticle.getAngle()));
-            cosSum += Math.cos(Math.toDegrees(dynamicParticle.getAngle()));
+            sinSum += Math.sin(dynamicParticle.getAngle());
+            cosSum += Math.cos(dynamicParticle.getAngle());
             cant++;
 
             double newAngle = Math.atan2(sinSum / cant, cosSum / cant) + deltaTheta;
@@ -73,7 +68,7 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             nextStep.add(new DynamicParticle(setNewPositionWithBoundry(particle, dx, dy, l), newAngle, dynamicParticle.getVelocity()));
         }
         double va = Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2)) / (this.particles.size() * vel);
-        vaEvolution.put(T+1, va);
+        vaEvolution.put(T + 1, va);
         simulation.put(T + 1, nextStep);
     }
 
@@ -82,10 +77,8 @@ public class OffLaticeAutomaton extends CellIndexMethod {
         while (T < TMax) {
             calculateDistances(T);
             T++;
-            cellNeighbours.clear();
-            getAllCellNeighbours(simulation.get(T));
         }
-        if(print) createSimulationFile(n, d);
+        if (print) createSimulationFile(n, d);
     }
 
     private void createSimulationFile(double n, double d) {
@@ -94,8 +87,9 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             for (Integer t : simulation.keySet()) {
                 painter.println((int) (particles.size()));
                 painter.println(t);
-                for (DynamicParticle p : simulation.get(t)) {
-                    painter.println(p.toString());
+                for (Particle p : simulation.get(t)) {
+                    DynamicParticle dp = (DynamicParticle) p;
+                    painter.println(dp.toString());
                 }
             }
             painter.close();
@@ -104,7 +98,7 @@ public class OffLaticeAutomaton extends CellIndexMethod {
         }
     }
 
-    private Particle setNewPositionWithBoundry (Particle particle, double dx, double dy, double maxL) {
+    private Particle setNewPositionWithBoundry(Particle particle, double dx, double dy, double maxL) {
         double newX = particle.getPosition().x + dx;
         double newY = particle.getPosition().y + dy;
 
