@@ -1,6 +1,6 @@
 package models;
 
-import com.sun.prism.paint.Color;
+import java.awt.*;
 
 /**
  * Created by sebastian on 3/18/17.
@@ -40,8 +40,9 @@ public class DynamicParticle extends Particle {
 
     @Override
     public String toString() {
-        float aux = (float)Math.abs(angle) / ((float)Math.PI*2);
-        int auxColor = (int)(255 * aux);
-        return getId() + "\t" + getPosition().x + "\t" + getPosition().y + "\t0.05\t" + angle + "\t" + velocity + "\t" + auxColor + "\t" + auxColor + "\t" + auxColor;
+        int aux = (int)Math.toDegrees(angle)+181;
+        return getId() + "\t" + getPosition().x + "\t" + getPosition().y + "\t0.05\t" + angle + "\t" + velocity + "\t" +
+                (Math.cos(angle) * velocity) + "\t" + (Math.sin(angle) * velocity) + "\t" +
+                aux + "\t" + angle + "\t" + aux;
     }
 }
