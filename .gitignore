@@ -7,3 +7,5 @@ all-cells.xyz
 cell-and-neig-brute-force.xyz
 cell-and-neig-cell-index.xyz
 .DS_Store
+*.xyz
+*.txt
