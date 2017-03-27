@@ -15,13 +15,14 @@ public class main {
 
         // N - L - RC - n - v - T
 //        double[] n = {0.0, 0.2, 0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.2,3.4,3.6,3.8,4.0,4.2,4.4,4.6,4.8,5.0};
-        int N = 1000;
-        double L = 15.8;
+        int N = 300;
+        double L = 7.0;
+        double n = 2.0;
 
         List<Particle> particles = generateRandomOffLaticeState(N, L, 0, 1.0, 0.03);
 
 //        for (int i = 0; i < n.length; i++) {
-            executeOffLaticeSimulation(N, L, 1.0, 3.5, 0.03, 1500, particles);
+            executeOffLaticeSimulation(N, L, 1.0, n, 0.03, 1500, particles);
 //        }
 
     }
