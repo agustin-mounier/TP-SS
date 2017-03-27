@@ -24,23 +24,18 @@ public class CellIndexMethod {
     protected double l;
     protected double rc;
     protected int m;
-    protected int distinguished;
 
     protected List<? extends Particle> particles;
     protected boolean periodicBoundry = false;
-    protected Map<Integer, Set<Integer>> interactionNeighbours = new HashMap<>();
-    protected Map<Particle, Set<Particle>> cellNeighbours = new HashMap<>();
 
-    public CellIndexMethod(double l, double rc, double radius, List<? extends Particle> particles, int distinguished, boolean periodicBoundry) {
+    public CellIndexMethod(double l, double rc, List<? extends Particle> particles, boolean periodicBoundry) {
         this.l = l;
         this.rc = rc;
-        this.m = (int) Math.ceil(l / (rc + 2 * radius));
-        this.distinguished = distinguished;
+        this.m = (int) Math.floor(l / rc);
         cellLenght = l / m;
         this.particles = particles;
         this.periodicBoundry = periodicBoundry;
         insertParticles(m, particles);
-        getAllCellNeighbours(particles);
     }
 
     private void insertParticles(int m, List<? extends Particle> particles) {
@@ -57,237 +52,6 @@ public class CellIndexMethod {
         }
     }
 
-    public Set<Particle> getNeighbours(Particle particle) {
-
-        Point point = particle.getPosition();
-        int cellX = (int) (point.x / cellLenght);
-        int cellY = (int) (point.y / cellLenght);
-        Set<Particle> neighbours = new HashSet<>();
-
-        for (int i = cellX - 1; i <= cellX + 1; i++) {
-            if (!periodicBoundry && (i < 0 || i >= m)) continue;
-
-            for (int j = cellY - 1; j <= cellY + 1; j++) {
-                if (!periodicBoundry && (j < 0 || j >= m)) continue;
-
-                if (periodicBoundry)
-                    addNeighboursWithPeriodicBoundries(neighbours, i, j);
-                else
-                    neighbours.addAll(matrix[i][j]);
-            }
-        }
-        neighbours.remove(particle);
-        return neighbours;
-    }
-
-    protected void getAllCellNeighbours(List<? extends Particle> particles) {
-        cellNeighbours.clear();
-        for (Particle particle :
-                particles) {
-            Point point = particle.getPosition();
-            int cellX = (int) (point.x / cellLenght);
-            int cellY = (int) (point.y / cellLenght);
-
-            cellNeighbours.put(particle, new HashSet<Particle>());
-
-            for(int i = cellX -1; i <= cellX +1 ; i++) {
-                if (!periodicBoundry && (i < 0 || i >= m)) continue;
-                for(int j = cellY; j <= cellY + 1; j++) {
-                    if ((!periodicBoundry && (j < 0 || j >= m)) || (i == cellX -1 && j == cellY)) continue;
-
-                    if (periodicBoundry)
-                        addNeighboursWithPeriodicBoundries(cellNeighbours.get(particle), i, j);
-                    else
-                        cellNeighbours.get(particle).addAll(matrix[i][j]);
-                }
-            }
-            cellNeighbours.get(particle).remove(particle);
-        }
-    }
-
-    private void addNeighboursWithPeriodicBoundries(Set<Particle> neighbours, int i, int j) {
-        Set<Particle> neighbourCell = new HashSet<>();
-        double deltaX = 0;
-        double deltaY = 0;
-
-        if (i < 0 && j < 0) {
-            neighbourCell = matrix[i + m][j + m];
-            deltaX = l * -1;
-            deltaY = l * -1;
-        } else if (i >= m && j >= m) {
-            neighbourCell = matrix[i - m][j - m];
-            deltaX = l;
-            deltaY = l;
-        } else if (i >= m && j < 0) {
-            neighbourCell = matrix[i - m][j + m];
-            deltaX = l;
-            deltaY = l * -1;
-        } else if (i < 0 && j >= m) {
-            neighbourCell = matrix[i + m][j - m];
-            deltaX = l * -1;
-            deltaY = l;
-        } else if (i < 0 && (j >= 0 && j < m)) {
-            neighbourCell = matrix[i + m][j];
-            deltaX = l * -1;
-            deltaY = 0;
-        } else if (i >= m && (j >= 0 && j < m)) {
-            neighbourCell = matrix[i - m][j];
-            deltaX = l;
-            deltaY = 0;
-        } else if (j < 0 && (i >= 0 && i < m)) {
-            neighbourCell = matrix[i][j + m];
-            deltaX = 0;
-            deltaY = l * -1;
-        } else if (j >= m && (i >= 0 && i < m)) {
-            neighbourCell = matrix[i][j - m];
-            deltaX = 0;
-            deltaY = l;
-        }
-
-        if (deltaX == 0 && deltaY == 0) {
-            neighbours.addAll(matrix[i][j]);
-        } else {
-            for (Particle p : neighbourCell) {
-                DynamicParticle dp = (DynamicParticle) p;
-                neighbours.add(new DynamicParticle(p.getId(), p.getRadius(), p.getRc(), p.getPosition().x + deltaX, p.getPosition().y + deltaY, dp.getAngle(), dp.getVelocity()));
-            }
-        }
-
-    }
-
-    public void calculateDistances() {
-        long start = System.currentTimeMillis();
-        for (Particle particle : particles) {
-            for (Particle neighbour : cellNeighbours.get(particle)) {
-                if (alreadyCalculated(particle, neighbour)) continue;
-                double distance = Particle.getDistance(particle, neighbour);
-                if (distance < rc) {
-                    addNeighbourToMap(particle, neighbour);
-                }
-            }
-        }
-
-        System.out.println(m + "\t" + (System.currentTimeMillis() - start) + "\t" + particles.size() + "\t" + l);
-        //System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " M: " + m + " N: " + particles.size() + " cant: " + cant);
-        /*
-        for (Integer p : interactionNeighbours.keySet()) {
-
-            System.out.print(p + " ");
-            for (Integer n : interactionNeighbours.get(p)) {
-                System.out.print(n + " ");
-            }
-            System.out.print("\n");
-        }
-        */
-
-    }
-
-    protected void addNeighbourToMap(Particle particle, Particle neighbour) {
-        if (interactionNeighbours.containsKey(particle.getId())) {
-            interactionNeighbours.get(particle.getId()).add(neighbour.getId());
-
-            if (interactionNeighbours.containsKey(neighbour.getId())) {
-                interactionNeighbours.get(neighbour.getId()).add(particle.getId());
-            } else {
-                Set<Integer> neighbourSet = new HashSet<>();
-                neighbourSet.add(particle.getId());
-                interactionNeighbours.put(neighbour.getId(), neighbourSet);
-            }
-        } else {
-            Set<Integer> particleSet = new HashSet<>();
-            particleSet.add(neighbour.getId());
-            interactionNeighbours.put(particle.getId(), particleSet);
-
-            Set<Integer> neighbourSet = new HashSet<>();
-            neighbourSet.add(particle.getId());
-            interactionNeighbours.put(neighbour.getId(), neighbourSet);
-        }
-    }
-
-    private void writeResults() {
-        String s = "";
-
-        try {
-            PrintWriter writer = new PrintWriter("cellIndexMethod.txt", "UTF-8");
-
-            for (Integer particleId : interactionNeighbours.keySet()) {
-                s = particleId + " ";
-                for (Integer neighbourId : interactionNeighbours.get(particleId)) {
-                    s += neighbourId + ", ";
-
-                }
-            }
-            writer.println(s);
-            writer.println("***************************************************************************************");
-            writer.close();
-        } catch (IOException e) {
-            // do something
-        }
-
-    }
-
-    protected boolean alreadyCalculated(Particle particle, Particle neighbour) {
-        return interactionNeighbours.containsKey(particle) && interactionNeighbours.get(particle).contains(neighbour);
-    }
-
-    public void calculateDistancesWithBruteForce() {
-        long start = System.currentTimeMillis();
-        int cant = 0;
-        for (Particle particle : particles) {
-            for (Particle neighbour : particles) {
-                if (particle == neighbour) continue;
-                double distance = Particle.getDistance(particle, neighbour);
-                if (distance < rc)
-                    cant++;
-            }
-        }
-
-        System.out.println("Elapsed time: " + (System.currentTimeMillis() - start) + " cant " + cant);
-    }
-
-
-    public void generateFileWithDistinction(int id, List<Particle> particles) {
-        Set<Particle> aux = new HashSet<>();
-
-        try {
-            PrintWriter painter = new PrintWriter("cell-and-neig.xyz", "UTF-8");
-
-            painter.println((int) (particles.size()));
-            painter.println(this.l);
-
-            Particle selectedOne = particles.get(id);
-            painter.println(Particle.getXYZformat(selectedOne, 110, 110, 0));
-            for (Particle neighbour :
-                    this.getNeighbours(selectedOne)) {
-                Set<Integer> particleNeighbours = interactionNeighbours.get(selectedOne.getId());
-
-                /*
-                 * Neighbours with distance < rc
-                 */
-                if (particleNeighbours != null && particleNeighbours.contains(neighbour.getId())) {
-                    painter.println(Particle.getXYZformat(neighbour, 110, 0, 0));
-                } else {
-                    /*
-                     * Neighbours in surrounding cells with distance > rc
-                     */
-                    painter.println(Particle.getXYZformat(neighbour, 0, 0, 110));
-                }
-                aux.add(neighbour);
-            }
-
-            aux.add(selectedOne);
-
-            for (Particle particle :
-                    particles) {
-                if (aux.contains(particle)) continue;
-                painter.println(Particle.getXYZformat(particle, 255, 255, 255));
-            }
-            painter.close();
-        } catch (IOException e) {
-
-        }
-    }
-
     public Map<Particle, Set<Particle>> findNeighbors(List<Particle> particles) {
 
         Map<Particle, Set<Particle>> map = new HashMap<>();
@@ -295,44 +59,43 @@ public class CellIndexMethod {
         for (Particle particle : particles) {
 
             if (!map.containsKey(particle))
-                map.put(particle, new HashSet<Particle>());
+                map.put(particle, new HashSet<>());
 
             Point coords = particle.getPosition();
-            int x = (int) coords.x / m;
-            int y = (int) coords.y / m;
-            Set<Particle> aux;
+            int x = (int) (coords.x / cellLenght);
+            int y = (int) (coords.y / cellLenght);
+            Set<Particle> cell;
 
-            aux = matrix[x][y];
-            addNeighbors(aux, particle, map, 0, 0);
+            cell = matrix[x][y];
+            addNeighbors(cell, particle, map, 0, 0);
 
-            aux = matrix[(x - 1 + m) % m][y];
+            cell = matrix[(x - 1 + m) % m][y];
             if (x - 1 >= 0) {
-                addNeighbors(aux, particle, map, 0, 0);
+                addNeighbors(cell, particle, map, 0, 0);
             } else if (periodicBoundry) {
-                addNeighbors(aux, particle, map, -1, 0);
+                addNeighbors(cell, particle, map, -1, 0);
             }
 
-            aux = matrix[(x - 1 + m) % m][(y + 1) % m];
+            cell = matrix[(x - 1 + m) % m][(y + 1) % m];
             if (x - 1 >= 0 && y + 1 < m) {
-                addNeighbors(aux, particle, map, 0, 0);
+                addNeighbors(cell, particle, map, 0, 0);
             } else if (periodicBoundry) {
-                addNeighbors(aux, particle, map, x - 1 >= 0 ? 0 : -1, y + 1 < m ? 0 : 1);
+                addNeighbors(cell, particle, map, x - 1 >= 0 ? 0 : -1, y + 1 < m ? 0 : 1);
             }
 
-            aux = matrix[x][(y + 1) % m];
+            cell = matrix[x][(y + 1) % m];
             if (y + 1 < m) {
-                addNeighbors(aux, particle, map, 0, 0);
+                addNeighbors(cell, particle, map, 0, 0);
             } else if (periodicBoundry) {
-                addNeighbors(aux, particle, map, 0, 1);
+                addNeighbors(cell, particle, map, 0, 1);
             }
 
-            aux = matrix[(x + 1) % m][(y + 1) % m];
+            cell = matrix[(x + 1) % m][(y + 1) % m];
             if (x + 1 < m && y + 1 < m) {
-                addNeighbors(aux, particle, map, 0, 0);
+                addNeighbors(cell, particle, map, 0, 0);
             } else if (periodicBoundry) {
-                addNeighbors(aux, particle, map, x + 1 < m ? 0 : 1, y + 1 < m ? 0 : 1);
+                addNeighbors(cell, particle, map, x + 1 < m ? 0 : 1, y + 1 < m ? 0 : 1);
             }
-
         }
 
         return map;
@@ -342,24 +105,37 @@ public class CellIndexMethod {
                               int deltaY) {
 
         for (Particle candidate : c) {
-            if (!candidate.equals(p)) {
-                if (!m.get(p).contains(candidate)) {
-                    double distance = Math.max(getDistance(p, candidate, deltaX, deltaY), 0);
-                    if (distance <= rc) {
-                        m.get(p).add(candidate);
-                        if (!m.containsKey(candidate))
-                            m.put(candidate, new HashSet<Particle>());
-                        m.get(candidate).add(p);
-                    }
+            if (!candidate.equals(p) && !m.get(p).contains(candidate)) {
+                double distance = Math.max(getDistance(p, candidate, deltaX, deltaY), 0);
+                if (distance <= rc) {
+                    m.get(p).add(candidate);
+                    if (!m.containsKey(candidate))
+                        m.put(candidate, new HashSet<>());
+                    m.get(candidate).add(p);
                 }
+                
             }
         }
     }
 
-    private double getDistance(Particle fixed, Particle moving, int deltaX, int deltaY) {
+    private double getDistance(Particle p1, Particle p2, int deltaX, int deltaY) {
         return Math
-                .sqrt(Math.pow(fixed.getPosition().x - (moving.getPosition().x + deltaX * l), 2) + Math.pow(fixed.getPosition().y - (moving.getPosition().y + deltaY * l), 2))
-                - fixed.getRadius() - moving.getRadius();
+                .sqrt(Math.pow(p1.getPosition().x - (p2.getPosition().x + deltaX * l), 2) + Math.pow(p1.getPosition().y - (p2.getPosition().y + deltaY * l), 2))
+                - p1.getRadius() - p2.getRadius();
+    }
+
+    protected void reloadMatrix(List<Particle> particles) {
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < m; j++) {
+                matrix[i][j] = new HashSet<>();
+            }
+        }
+
+        for (Particle p : particles) {
+            int x = (int) (p.getPosition().x / cellLenght);
+            int y = (int) (p.getPosition().y / cellLenght);
+            matrix[x][y].add(p);
+        }
     }
 
 }
