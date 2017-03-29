@@ -1,7 +1,5 @@
 package models;
 
-import java.awt.*;
-
 /**
  * Created by sebastian on 3/18/17.
  */
@@ -26,7 +24,8 @@ public class DynamicParticle extends Particle {
 
     @Override
     public String toString() {
-        int aux = (int)Math.toDegrees(angle)+181;
+        double aux = (angle + 2*Math.PI )*255/360;
+
         return getId() + "\t" + getPosition().x + "\t" + getPosition().y + "\t0.15\t" + angle + "\t" + velocity + "\t" +
                 (Math.cos(angle) * velocity) + "\t" + (Math.sin(angle) * velocity) + "\t" +
                 aux + "\t" + angle + "\t" + aux;
