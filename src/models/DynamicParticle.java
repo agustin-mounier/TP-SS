@@ -27,7 +27,7 @@ public class DynamicParticle extends Particle {
     @Override
     public String toString() {
         int aux = (int)Math.toDegrees(angle)+181;
-        return getId() + "\t" + getPosition().x + "\t" + getPosition().y + "\t0.05\t" + angle + "\t" + velocity + "\t" +
+        return getId() + "\t" + getPosition().x + "\t" + getPosition().y + "\t0.15\t" + angle + "\t" + velocity + "\t" +
                 (Math.cos(angle) * velocity) + "\t" + (Math.sin(angle) * velocity) + "\t" +
                 aux + "\t" + angle + "\t" + aux;
     }

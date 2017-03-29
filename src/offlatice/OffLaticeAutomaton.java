@@ -71,10 +71,9 @@ public class OffLaticeAutomaton extends CellIndexMethod {
 
             nextStep.add(new DynamicParticle(p.getId(), p.getRadius(), p.getRc(), newX, newY, newAngle, dp.getVelocity()));
         }
-//        if(T > 1500 - 150) {
-//            vaSum += Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2)) / (this.particles.size() * vel);
-//        }
-//        System.out.println(Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2)) / (this.particles.size() * vel));
+        if(T > 1500 - 150) {
+            vaSum += Math.sqrt(Math.pow(vx, 2) + Math.pow(vy, 2)) / (this.particles.size() * vel);
+        }
         simulation.put(T + 1, nextStep);
     }
 
@@ -88,7 +87,7 @@ public class OffLaticeAutomaton extends CellIndexMethod {
             if(T % 100 == 0)
                 System.out.print(".");
         }
-//        System.out.println(vaSum/150);
+        System.out.println("\nVa: " + vaSum/150);
         if (print) createSimulationFile(n, d);
     }
 
